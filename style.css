@@ -1,47 +1,55 @@
-/* ตั้งค่าพื้นฐาน */
 body { 
     font-family: 'Sarabun', sans-serif; 
     background-color: #f4f4f9; 
-    display: flex; 
-    justify-content: center; 
     padding: 20px; 
-    font-size: 18px; /* เพิ่มขนาดตัวอักษรพื้นฐาน */
+    font-size: 16px;
+    margin: 0;
+    display: flex;
+    justify-content: center;
 }
 
-/* กล่องคอนเทนเนอร์หลัก */
 .container { 
     background: white; 
-    padding: 30px; /* เพิ่มพื้นที่ขอบในกล่อง */
+    padding: 20px; 
     border-radius: 12px; 
     box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
     width: 100%; 
-    max-width: 600px; /* ขยายความกว้างกล่องให้รับกับตัวหนังสือที่ใหญ่ขึ้น */
+    max-width: 1200px; /* ขยายความกว้างรวม */
+    display: flex; /* จัดเรียงแนวนอน */
+    gap: 30px; /* ระยะห่างระหว่างซ้าย-ขวา */
+    min-height: 80vh; /* ความสูงขั้นต่ำ */
 }
 
-/* หัวข้อหลัก */
-h1 {
-    font-size: 36px; /* หัวข้อใหญ่สะใจ */
-    text-align: center;
-    margin-bottom: 25px;
-    color: #333;
+/* ฝั่งซ้าย: รายการ */
+.notes-sidebar {
+    flex: 1; /* กินพื้นที่ 1 ส่วน */
+    border-right: 1px solid #eee; /* เส้นกั้น */
+    padding-right: 20px;
+    overflow-y: auto; /* ให้เลื่อนลงได้ถ้ารายการเยอะ */
+    max-height: 80vh;
 }
 
-/* ช่องกรอกข้อมูล */
+/* ฝั่งขวา: ฟอร์ม */
+.editor-area {
+    flex: 1.5; /* กินพื้นที่ 1.5 ส่วน (กว้างกว่า) */
+    display: flex;
+    flex-direction: column;
+}
+
+h1, h2 { color: #333; margin-top: 0; }
+
 input, textarea { 
     width: 100%; 
     margin-bottom: 15px; 
-    padding: 15px; /* เพิ่มพื้นที่ภายในช่องกรอก */
+    padding: 15px; 
     border: 1px solid #ddd; 
     border-radius: 8px; 
     box-sizing: border-box;
-    font-size: 20px; /* ตัวหนังสือตอนพิมพ์ใหญ่ขึ้น */
+    font-size: 18px;
 }
 
-textarea {
-    height: 150px; /* เพิ่มความสูงกล่องข้อความ */
-}
+textarea { flex-grow: 1; resize: vertical; min-height: 300px; }
 
-/* ปุ่มกดหลัก */
 button { 
     width: 100%; 
     padding: 15px; 
@@ -50,61 +58,46 @@ button {
     border: none; 
     border-radius: 8px; 
     cursor: pointer; 
-    font-size: 22px; /* ตัวหนังสือบนปุ่มใหญ่ขึ้น */
+    font-size: 20px; 
     font-weight: bold;
 }
 
-button:hover { 
-    background-color: #218838; 
-}
+button:hover { background-color: #218838; }
 
-/* รายการบันทึก */
-ul { 
-    list-style: none; 
-    padding: 0; 
-    margin-top: 30px;
-}
-
+/* รายการ Note */
+ul { list-style: none; padding: 0; margin: 0; }
 li { 
-    background: #fff; 
-    border-bottom: 1px solid #eee; 
-    padding: 20px 10px; /* เพิ่มระยะห่างระหว่างรายการ */
-    position: relative; 
+    background: #fdfdfd; 
+    border: 1px solid #eee; 
+    border-radius: 8px;
+    padding: 15px; 
+    margin-bottom: 15px;
+    transition: box-shadow 0.2s;
+}
+li:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+li h3 { margin: 0 0 5px 0; font-size: 20px; color: #2c3e50; }
+li p { margin: 0 0 10px 0; color: #555; font-size: 16px; white-space: pre-wrap; /* ให้แสดงการขึ้นบรรทัดใหม่ได้ */ }
+
+/* การแสดงวันที่ */
+.timestamp {
+    font-size: 12px;
+    color: #888;
+    margin-top: 10px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
-li h3 { 
-    margin: 0 0 10px 0; 
-    font-size: 24px; /* หัวข้อในรายการใหญ่ขึ้น */
-    color: #2c3e50;
-}
+/* ปุ่มแก้ไข/ลบ ในรายการ */
+.actions { margin-top: 10px; text-align: right; }
+.btn-edit { background: #ffc107; color: black; width: auto; padding: 5px 15px; font-size: 14px; margin-right: 5px; border-radius: 4px; }
+.btn-delete { background: #dc3545; width: auto; padding: 5px 15px; font-size: 14px; border-radius: 4px; }
 
-li p { 
-    margin: 0; 
-    color: #555; 
-    font-size: 20px; /* เนื้อหาในรายการใหญ่ขึ้น */
-    line-height: 1.6; /* เพิ่มระยะห่างบรรทัดให้อ่านง่าย */
-}
-
-/* ปุ่มแก้ไขและลบ */
-.actions { 
-    margin-top: 15px; 
-    text-align: right; 
-}
-
-.btn-edit { 
-    background: #ffc107; 
-    color: black; 
-    width: auto; 
-    padding: 10px 20px; 
-    font-size: 16px; /* ปุ่มเล็กใหญ่ขึ้น */
-    margin-right: 10px;
-    border-radius: 6px;
-}
-
-.btn-delete { 
-    background: #dc3545; 
-    width: auto; 
-    padding: 10px 20px; 
-    font-size: 16px; /* ปุ่มเล็กใหญ่ขึ้น */
-    border-radius: 6px;
+/* สำหรับมือถือ ให้เรียงลงมาแทน */
+@media (max-width: 768px) {
+    .container { flex-direction: column-reverse; /* เอารายการลงล่าง เอาที่เขียนไว้บน */ }
+    .notes-sidebar { border-right: none; border-top: 1px solid #eee; padding-right: 0; padding-top: 20px; max-height: none;}
 }

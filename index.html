@@ -36,8 +36,16 @@
         button { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-size: 20px; font-weight: bold; transition: 0.2s; }
         .btn-save { background-color: #28a745; color: white; }
         .btn-save:hover { background-color: #218838; }
-        .btn-edit-mode { background-color: #ffc107; color: #333; margin-bottom: 10px; }
+        .btn-edit-mode { background-color: #ffc107; color: #333; width: 100%; } /* ปุ่มแก้ไข */
         .btn-cancel { background-color: #6c757d; color: white; margin-top: 10px; }
+
+        /* เพิ่ม CSS ปุ่มลบ */
+        .btn-delete-main {
+            background-color: #dc3545;
+            color: white;
+            width: 100%;
+        }
+        .btn-delete-main:hover { background-color: #c82333; }
 
         /* List Items */
         ul { list-style: none; padding: 0; margin: 0; }
@@ -62,7 +70,7 @@
 <body>
     <div class="container">
         <div class="notes-sidebar">
-            <h2>📚 Notes</h2>
+            <h2>📚 รายการบันทึก</h2>
             <ul id="noteList">
                 <li style="text-align:center; color:#ccc;">กำลังโหลด...</li>
             </ul>
@@ -77,7 +85,11 @@
                 <div class="meta-info" id="viewMeta"></div>
                 <h1 id="viewTitle">หัวข้อเรื่อง</h1>
                 <div id="viewContent">เนื้อหา...</div>
-                <button class="btn-edit-mode" onclick="enableEditMode()">✏️ แก้ไขบันทึกนี้</button>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-edit-mode" onclick="enableEditMode()">✏️ แก้ไขบันทึกนี้</button>
+                    <button class="btn-delete-main" onclick="confirmDelete()">🗑️ ลบบันทึกนี้</button>
+                </div>
             </div>
 
             <div id="editSection">

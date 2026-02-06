@@ -8,17 +8,14 @@ const firebaseConfig = {
   appId: "1:541940097515:web:1a5302983a1d0f1aafb9ae"
 };
 
-// Initialize Firebase
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// ตัวแปรเก็บข้อมูล Note ทั้งหมด (เพื่อดึงมาแสดงตอนคลิก)
 let allNotes = {}; 
 let isEditing = false;
 let currentEditId = null;
 
+// --- Helper Functions ---
 function escapeHtml(text) {
     if (!text) return text;
     return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -30,51 +27,44 @@ function formatDate(timestamp) {
     return date.toLocaleString('th-TH', { year: '2-digit', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-// โหลดข้อมูลและสร้างรายการ
+// --- Core Functions ---
+
 function loadNotes() {
     const list = document.getElementById('noteList');
     list.innerHTML = "";
-    allNotes = {}; // เคลียร์ข้อมูลเก่า
+    allNotes = {};
 
     db.collection("notes").orderBy("updatedAt", "desc").get().then((querySnapshot) => {
         if(querySnapshot.empty) {
-            list.innerHTML = "<p style='text-align:center; color:#999;'>ยังไม่มีบันทึก</p>";
+            list.innerHTML = "<p style='text-align:center; color:#999; margin-top:20px;'>ยังไม่มีบันทึก</p>";
             return;
         }
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            
-            // เก็บข้อมูลดิบไว้ในตัวแปร global เพื่อเรียกใช้ตอนคลิก (แก้ปัญหาเครื่องหมายคำพูด)
-            allNotes[doc.id] = data;
+            allNotes[doc.id] = data; // เก็บข้อมูลดิบ
 
             const safeTitle = escapeHtml(data.title);
-            const safeContent = escapeHtml(data.content); // CSS จะตัดบรรทัดให้เอง
+            const safeContent = escapeHtml(data.content);
             const updatedStr = formatDate(data.updatedAt);
 
-            // สร้าง HTML (สังเกต onclick จะเรียกฟังก์ชัน selectNote)
             const li = document.createElement('li');
             li.id = `li-${doc.id}`;
-            li.onclick = () => selectNote(doc.id); // คลิกที่กล่องเพื่อดู
+            li.onclick = () => selectNote(doc.id); // คลิกแล้วไปหน้าอ่าน (Read Mode)
             
             li.innerHTML = `
                 <h3>${safeTitle}</h3>
                 <p>${safeContent}</p>
-                <div class="timestamp">
-                    <span>แก้ไข: ${updatedStr}</span>
-                </div>
-                <div class="actions">
-                    <button class="btn-delete" onclick="event.stopPropagation(); deleteNote('${doc.id}')">ลบ</button>
-                </div>
+                <div class="timestamp">แก้ไขล่าสุด: ${updatedStr}</div>
             `;
             list.appendChild(li);
         });
     });
 }
 
-// ฟังก์ชันเมื่อคลิกที่รายการทางซ้าย
+// 1. ฟังก์ชันเมื่อคลิกรายการ (แสดง Read Mode)
 function selectNote(id) {
-    const data = allNotes[id]; // ดึงข้อมูลจากตัวแปรที่เก็บไว้
+    const data = allNotes[id];
     if (!data) return;
 
     // Highlight รายการที่เลือก
@@ -82,24 +72,66 @@ function selectNote(id) {
     const activeLi = document.getElementById(`li-${id}`);
     if(activeLi) activeLi.classList.add('active');
 
-    // เข้าสู่โหมดแก้ไข/ดูทันที
-    isEditing = true;
-    currentEditId = id;
-    
-    document.getElementById('noteTitle').value = data.title;
-    document.getElementById('noteContent').value = data.content;
-    
-    document.getElementById('formTitle').innerText = "✏️ กำลังดู/แก้ไขบันทึก";
-    document.getElementById('saveBtn').innerText = "อัพเดทการแก้ไข";
-    document.getElementById('cancelBtn').style.display = "inline-block";
-    
-    // ถ้าเป็นมือถือ ให้เลื่อนจอไปที่ฟอร์ม
+    currentEditId = id; // จำ ID ไว้ เผื่อกดแก้ไข
+
+    // ใส่ข้อมูลลงในส่วน View Mode
+    document.getElementById('viewTitle').innerText = data.title;
+    document.getElementById('viewContent').innerText = data.content; // ใช้ innerText เพื่อความปลอดภัย
+    document.getElementById('viewMeta').innerText = `สร้างเมื่อ: ${formatDate(data.createdAt)} | แก้ไขล่าสุด: ${formatDate(data.updatedAt)}`;
+
+    // สลับหน้าจอ: แสดง View, ซ่อน Edit
+    document.getElementById('viewSection').style.display = 'block';
+    document.getElementById('editSection').style.display = 'none';
+
+    // ถ้าเป็นมือถือ เลื่อนจอขึ้นไปดูเนื้อหา
     if(window.innerWidth <= 900) {
         document.querySelector('.editor-area').scrollIntoView({ behavior: 'smooth' });
     }
 }
 
-function addNote() {
+// 2. ฟังก์ชันเมื่อกดปุ่ม "แก้ไข" (เปลี่ยนเป็น Edit Mode)
+function enableEditMode() {
+    const data = allNotes[currentEditId];
+    if(!data) return;
+
+    isEditing = true;
+    
+    // เอาข้อมูลไปใส่ในช่องกรอก
+    document.getElementById('noteTitle').value = data.title;
+    document.getElementById('noteContent').value = data.content;
+    
+    // ปรับ UI ปุ่ม
+    document.getElementById('formTitle').innerText = "✏️ แก้ไขบันทึก";
+    document.getElementById('saveBtn').innerText = "บันทึกการแก้ไข";
+    document.getElementById('cancelBtn').style.display = "block"; // ปุ่มยกเลิกโผล่มา
+
+    // สลับหน้าจอ: แสดง Edit, ซ่อน View
+    document.getElementById('viewSection').style.display = 'none';
+    document.getElementById('editSection').style.display = 'block';
+}
+
+// 3. ฟังก์ชันสำหรับเขียนใหม่ (New Note)
+function showCreateForm() {
+    isEditing = false;
+    currentEditId = null;
+    
+    // เคลียร์ฟอร์ม
+    document.getElementById('noteTitle').value = '';
+    document.getElementById('noteContent').value = '';
+    
+    document.getElementById('formTitle').innerText = "📝 เขียนบันทึกใหม่";
+    document.getElementById('saveBtn').innerText = "บันทึก";
+    document.getElementById('cancelBtn').style.display = "none";
+    
+    // สลับหน้าจอ: แสดง Edit, ซ่อน View
+    document.getElementById('viewSection').style.display = 'none';
+    document.getElementById('editSection').style.display = 'block';
+
+    // เอา Highlight ออก
+    document.querySelectorAll('li').forEach(el => el.classList.remove('active'));
+}
+
+function saveNote() {
     const title = document.getElementById('noteTitle').value;
     const content = document.getElementById('noteContent').value;
 
@@ -112,44 +144,32 @@ function addNote() {
     };
 
     if (isEditing) {
+        // อัปเดตข้อมูลเก่า
         db.collection("notes").doc(currentEditId).update(saveData).then(() => {
             loadNotes();
-            resetForm();
+            // เมื่อบันทึกเสร็จ ให้กลับไปหน้า View Mode ของอันที่เพิ่งแก้
+            // เราต้องรอแป๊บนึงเพื่อให้ allNotes อัปเดต (แต่เพื่อความเร็วเราอัปเดต UI หลอกไปก่อนได้)
+            setTimeout(() => selectNote(currentEditId), 500); 
         });
     } else {
+        // สร้างใหม่
         saveData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-        db.collection("notes").add(saveData).then(() => {
+        db.collection("notes").add(saveData).then((docRef) => {
             loadNotes();
-            resetForm();
+            // ไปหน้า View Mode ของอันที่เพิ่งสร้าง
+            setTimeout(() => selectNote(docRef.id), 500);
         });
     }
-}
-
-function deleteNote(id) {
-    if(confirm("ลบรายการนี้?")) {
-        db.collection("notes").doc(id).delete().then(() => {
-            if(currentEditId === id) resetForm(); // ถ้าลบตัวที่เปิดอยู่ ให้เคลียร์ฟอร์ม
-            loadNotes();
-        });
-    }
-}
-
-function resetForm() {
-    document.getElementById('noteTitle').value = '';
-    document.getElementById('noteContent').value = '';
-    isEditing = false;
-    currentEditId = null;
-    document.getElementById('formTitle').innerText = "📝 เขียนบันทึกใหม่";
-    document.getElementById('saveBtn').innerText = "บันทึกใหม่";
-    document.getElementById('cancelBtn').style.display = "none";
-    
-    // เอา Highlight ออก
-    document.querySelectorAll('li').forEach(el => el.classList.remove('active'));
 }
 
 function cancelEdit() {
-    resetForm();
+    // กดยกเลิก จะกลับไปหน้าดู (View Mode)
+    if(currentEditId) {
+        selectNote(currentEditId);
+    } else {
+        showCreateForm();
+    }
 }
 
-// เริ่มทำงาน
 loadNotes();
+showCreateForm(); // เริ่มต้นให้เป็นหน้าเขียนใหม่

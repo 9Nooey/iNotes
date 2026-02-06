@@ -4,20 +4,135 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iNotes</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* --- ส่วน CSS (ดีไซน์) --- */
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            background-color: #f4f4f9; 
+            padding: 20px; 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+            width: 100%; 
+            max-width: 1200px; 
+            display: flex; /* จัดเรียงแนวนอน */
+            gap: 40px; 
+            min-height: 80vh;
+        }
+
+        /* ฝั่งซ้าย: รายการ */
+        .notes-sidebar {
+            flex: 1; 
+            border-right: 2px solid #f0f0f0; 
+            padding-right: 30px;
+            overflow-y: auto;
+        }
+
+        /* ฝั่งขวา: ฟอร์ม */
+        .editor-area {
+            flex: 1.5; 
+            display: flex;
+            flex-direction: column;
+            padding-left: 10px;
+        }
+
+        h1, h2 { color: #333; margin-top: 0; }
+        
+        /* ปรับขนาดตัวหนังสือ */
+        h1 { font-size: 32px; }
+        h2 { font-size: 28px; border-bottom: 2px solid #28a745; padding-bottom: 10px; display: inline-block; }
+
+        input, textarea { 
+            width: 100%; 
+            margin-bottom: 20px; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box;
+            font-size: 18px;
+            font-family: inherit;
+        }
+
+        textarea { flex-grow: 1; resize: vertical; min-height: 300px; }
+
+        .button-group { display: flex; gap: 10px; }
+
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            background-color: #28a745; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 20px; 
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        button:hover { background-color: #218838; transform: translateY(-2px); }
+
+        /* รายการ Note */
+        ul { list-style: none; padding: 0; margin: 0; }
+        li { 
+            background: #fff; 
+            border: 1px solid #e0e0e0; 
+            border-radius: 10px;
+            padding: 20px; 
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        li:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #28a745; }
+
+        li h3 { margin: 0 0 10px 0; font-size: 22px; color: #2c3e50; }
+        li p { margin: 0 0 15px 0; color: #555; font-size: 18px; line-height: 1.6; white-space: pre-wrap; }
+
+        /* เวลา */
+        .timestamp {
+            font-size: 14px;
+            color: #999;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .actions { margin-top: 15px; text-align: right; }
+        .btn-edit { background: #ffc107; color: #333; width: auto; padding: 8px 20px; font-size: 16px; margin-right: 5px; }
+        .btn-delete { background: #dc3545; width: auto; padding: 8px 20px; font-size: 16px; }
+
+        /* มือถือ */
+        @media (max-width: 900px) {
+            .container { flex-direction: column-reverse; height: auto; padding: 20px; }
+            .notes-sidebar { border-right: none; border-top: 2px solid #f0f0f0; padding-right: 0; padding-top: 30px; margin-top: 20px;}
+            .editor-area { padding-left: 0; }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <div class="notes-sidebar">
-            <h2>📚 รายการบันทึก</h2>
+            <h2>📚 Notes</h2>
             <ul id="noteList">
-                </ul>
+                <li style="text-align:center; color:#ccc; padding: 20px;">กำลังโหลดข้อมูล...</li>
+            </ul>
         </div>
 
         <div class="editor-area">
-            <h1 id="formTitle">📝 เขียนบันทึกใหม่</h1>
+            <h1 id="formTitle">📝 New Note</h1>
             <input type="text" id="noteTitle" placeholder="หัวข้อเรื่อง...">
-            <textarea id="noteContent" placeholder="รายละเอียด..."></textarea>
+            <textarea id="noteContent" placeholder="พิมพ์รายละเอียดที่นี่..."></textarea>
             
             <div class="button-group">
                 <button onclick="addNote()" id="saveBtn">บันทึก</button>

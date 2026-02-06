@@ -1,0 +1,12 @@
+body { font-family: 'Sarabun', sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
+.container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+input, textarea { width: 100%; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;}
+button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+button:hover { background-color: #218838; }
+ul { list-style: none; padding: 0; }
+li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; position: relative; }
+li h3 { margin: 0 0 5px 0; font-size: 18px; }
+li p { margin: 0; color: #666; font-size: 14px; }
+.actions { margin-top: 10px; text-align: right; }
+.btn-edit { background: #ffc107; color: black; width: auto; padding: 5px 10px; font-size: 12px; margin-right: 5px;}
+.btn-delete { background: #dc3545; width: auto; padding: 5px 10px; font-size: 12px; }

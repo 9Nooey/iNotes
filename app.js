@@ -170,6 +170,22 @@ function cancelEdit() {
         showCreateForm();
     }
 }
+// ฟังก์ชันสั่งลบ Note ปัจจุบันที่เปิดดูอยู่
+function confirmDelete() {
+    if(!currentEditId) return;
+
+    if(confirm("คุณต้องการลบรายการนี้อย่างถาวรใช่ไหม?")) {
+        db.collection("notes").doc(currentEditId).delete().then(() => {
+            // ลบเสร็จแล้ว ให้กลับไปหน้าเขียนใหม่
+            showCreateForm();
+            // โหลดรายการทางซ้ายใหม่
+            loadNotes();
+        }).catch((error) => {
+            console.error("Error removing document: ", error);
+            alert("เกิดข้อผิดพลาดในการลบ");
+        });
+    }
+}
 
 loadNotes();
 showCreateForm(); // เริ่มต้นให้เป็นหน้าเขียนใหม่

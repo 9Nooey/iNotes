@@ -1,12 +1,110 @@
-body { font-family: 'Sarabun', sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
-.container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-input, textarea { width: 100%; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;}
-button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
-button:hover { background-color: #218838; }
-ul { list-style: none; padding: 0; }
-li { background: #fff; border-bottom: 1px solid #eee; padding: 10px; position: relative; }
-li h3 { margin: 0 0 5px 0; font-size: 18px; }
-li p { margin: 0; color: #666; font-size: 14px; }
-.actions { margin-top: 10px; text-align: right; }
-.btn-edit { background: #ffc107; color: black; width: auto; padding: 5px 10px; font-size: 12px; margin-right: 5px;}
-.btn-delete { background: #dc3545; width: auto; padding: 5px 10px; font-size: 12px; }
+/* ตั้งค่าพื้นฐาน */
+body { 
+    font-family: 'Sarabun', sans-serif; 
+    background-color: #f4f4f9; 
+    display: flex; 
+    justify-content: center; 
+    padding: 20px; 
+    font-size: 18px; /* เพิ่มขนาดตัวอักษรพื้นฐาน */
+}
+
+/* กล่องคอนเทนเนอร์หลัก */
+.container { 
+    background: white; 
+    padding: 30px; /* เพิ่มพื้นที่ขอบในกล่อง */
+    border-radius: 12px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+    width: 100%; 
+    max-width: 600px; /* ขยายความกว้างกล่องให้รับกับตัวหนังสือที่ใหญ่ขึ้น */
+}
+
+/* หัวข้อหลัก */
+h1 {
+    font-size: 36px; /* หัวข้อใหญ่สะใจ */
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+/* ช่องกรอกข้อมูล */
+input, textarea { 
+    width: 100%; 
+    margin-bottom: 15px; 
+    padding: 15px; /* เพิ่มพื้นที่ภายในช่องกรอก */
+    border: 1px solid #ddd; 
+    border-radius: 8px; 
+    box-sizing: border-box;
+    font-size: 20px; /* ตัวหนังสือตอนพิมพ์ใหญ่ขึ้น */
+}
+
+textarea {
+    height: 150px; /* เพิ่มความสูงกล่องข้อความ */
+}
+
+/* ปุ่มกดหลัก */
+button { 
+    width: 100%; 
+    padding: 15px; 
+    background-color: #28a745; 
+    color: white; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-size: 22px; /* ตัวหนังสือบนปุ่มใหญ่ขึ้น */
+    font-weight: bold;
+}
+
+button:hover { 
+    background-color: #218838; 
+}
+
+/* รายการบันทึก */
+ul { 
+    list-style: none; 
+    padding: 0; 
+    margin-top: 30px;
+}
+
+li { 
+    background: #fff; 
+    border-bottom: 1px solid #eee; 
+    padding: 20px 10px; /* เพิ่มระยะห่างระหว่างรายการ */
+    position: relative; 
+}
+
+li h3 { 
+    margin: 0 0 10px 0; 
+    font-size: 24px; /* หัวข้อในรายการใหญ่ขึ้น */
+    color: #2c3e50;
+}
+
+li p { 
+    margin: 0; 
+    color: #555; 
+    font-size: 20px; /* เนื้อหาในรายการใหญ่ขึ้น */
+    line-height: 1.6; /* เพิ่มระยะห่างบรรทัดให้อ่านง่าย */
+}
+
+/* ปุ่มแก้ไขและลบ */
+.actions { 
+    margin-top: 15px; 
+    text-align: right; 
+}
+
+.btn-edit { 
+    background: #ffc107; 
+    color: black; 
+    width: auto; 
+    padding: 10px 20px; 
+    font-size: 16px; /* ปุ่มเล็กใหญ่ขึ้น */
+    margin-right: 10px;
+    border-radius: 6px;
+}
+
+.btn-delete { 
+    background: #dc3545; 
+    width: auto; 
+    padding: 10px 20px; 
+    font-size: 16px; /* ปุ่มเล็กใหญ่ขึ้น */
+    border-radius: 6px;
+}

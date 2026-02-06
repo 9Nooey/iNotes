@@ -5,82 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iNotes</title>
     <style>
-        /* --- CSS เดิม (คงไว้) --- */
+        /* --- CSS ดีไซน์ --- */
         body { font-family: 'Sarabun', sans-serif; background-color: #f4f4f9; padding: 20px; margin: 0; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
         .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 1200px; display: flex; gap: 40px; min-height: 80vh; }
-        .notes-sidebar { flex: 1; border-right: 2px solid #f0f0f0; padding-right: 30px; overflow-y: auto; max-height: 80vh; /* จำกัดความสูงให้เลื่อนได้ */ }
-        .editor-area { flex: 1.5; display: flex; flex-direction: column; padding-left: 10px; }
-        h1, h2 { color: #333; margin-top: 0; }
-        h1 { font-size: 32px; }
-        h2 { font-size: 28px; border-bottom: 2px solid #28a745; padding-bottom: 10px; display: inline-block; }
+        
+        /* Sidebar */
+        .notes-sidebar { flex: 1; border-right: 2px solid #f0f0f0; padding-right: 30px; overflow-y: auto; max-height: 80vh; }
+        
+        /* Editor Area */
+        .editor-area { flex: 1.5; display: flex; flex-direction: column; padding-left: 10px; position: relative; }
+
+        /* ปุ่มเขียนใหม่มุมขวาบน */
+        .top-action { text-align: right; margin-bottom: 20px; }
+        .btn-new { background-color: #17a2b8; color: white; padding: 8px 15px; border-radius: 20px; border: none; cursor: pointer; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-new:hover { background-color: #138496; }
+
+        /* ส่วนแสดงผล (Read Mode) */
+        #viewSection { display: none; /* ซ่อนไว้ก่อน */ animation: fadeIn 0.3s; }
+        #viewTitle { font-size: 36px; color: #333; margin-bottom: 20px; border-bottom: none; }
+        #viewContent { font-size: 18px; line-height: 1.8; color: #444; white-space: pre-wrap; margin-bottom: 30px; }
+        .meta-info { font-size: 13px; color: #999; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+        /* ส่วนแก้ไข (Edit Mode) */
+        #editSection { display: block; animation: fadeIn 0.3s; }
+        
+        /* Form Elements */
         input, textarea { width: 100%; margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 18px; font-family: inherit; }
-        textarea { flex-grow: 1; resize: vertical; min-height: 300px; }
-        .button-group { display: flex; gap: 10px; }
-        button { width: 100%; padding: 15px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 20px; font-weight: bold; transition: 0.2s; }
-        button:hover { background-color: #218838; transform: translateY(-2px); }
+        textarea { resize: vertical; min-height: 400px; }
+        
+        button { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-size: 20px; font-weight: bold; transition: 0.2s; }
+        .btn-save { background-color: #28a745; color: white; }
+        .btn-save:hover { background-color: #218838; }
+        .btn-edit-mode { background-color: #ffc107; color: #333; margin-bottom: 10px; }
+        .btn-cancel { background-color: #6c757d; color: white; margin-top: 10px; }
 
-        /* --- ส่วนที่ปรับปรุงใหม่ (ตัดคำและ Clickable) --- */
+        /* List Items */
         ul { list-style: none; padding: 0; margin: 0; }
+        li { background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; padding: 20px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s; }
+        li:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #28a745; transform: translateX(5px); }
+        li.active { border-color: #28a745; background-color: #f0fff4; }
+        li h3 { margin: 0 0 10px 0; font-size: 20px; pointer-events: none; }
+        li p { margin: 0; color: #666; font-size: 16px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; pointer-events: none; }
         
-        li { 
-            background: #fff; 
-            border: 1px solid #e0e0e0; 
-            border-radius: 10px;
-            padding: 20px; 
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: all 0.2s;
-            cursor: pointer; /* เปลี่ยนเมาส์เป็นรูปมือ */
-        }
-        
-        li:hover { 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
-            border-color: #28a745; 
-            transform: translateX(5px); /* ขยับขวานิดนึงตอนชี้ */
-        }
+        .timestamp { font-size: 12px; color: #aaa; margin-top: 10px; }
 
-        /* Active State: บอกว่ากำลังเลือกอันไหนอยู่ */
-        li.active {
-            border-color: #28a745;
-            background-color: #f0fff4;
-        }
-
-        li h3 { margin: 0 0 10px 0; font-size: 20px; color: #2c3e50; pointer-events: none; }
-        
-        /* ตัดคำอธิบายให้เหลือ 3 บรรทัด */
-        li p { 
-            margin: 0 0 15px 0; 
-            color: #666; 
-            font-size: 16px; 
-            line-height: 1.5; 
-            
-            /* เทคนิคการตัดคำ */
-            display: -webkit-box;
-            -webkit-line-clamp: 3; /* โชว์แค่ 3 บรรทัด */
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            pointer-events: none; /* กดที่ text ก็ให้ถือว่ากดที่ li */
-        }
-
-        .timestamp { font-size: 12px; color: #aaa; margin-top: 10px; display: flex; justify-content: space-between; pointer-events: none; }
-        .actions { margin-top: 10px; text-align: right; }
-        
-        /* ปุ่มลบให้เล็กหน่อยและแยกออกมา */
-        .btn-delete { 
-            background: #dc3545; 
-            width: auto; 
-            padding: 5px 15px; 
-            font-size: 14px; 
-            border-radius: 5px;
-            z-index: 2; /* ให้อยู่ชั้นบนสุด */
-        }
-        .btn-delete:hover { background: #c82333; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         @media (max-width: 900px) {
-            .container { flex-direction: column-reverse; height: auto; padding: 20px; }
-            .notes-sidebar { border-right: none; border-top: 2px solid #f0f0f0; padding-right: 0; padding-top: 30px; margin-top: 20px;}
+            .container { flex-direction: column-reverse; padding: 15px; }
+            .notes-sidebar { border-right: none; border-top: 2px solid #f0f0f0; padding-right: 0; padding-top: 20px; margin-top: 20px; }
             .editor-area { padding-left: 0; }
+            h1 { font-size: 28px; }
         }
     </style>
 </head>
@@ -89,18 +64,29 @@
         <div class="notes-sidebar">
             <h2>📚 Notes</h2>
             <ul id="noteList">
-                <li style="text-align:center; color:#ccc; padding: 20px;">กำลังโหลดข้อมูล...</li>
+                <li style="text-align:center; color:#ccc;">กำลังโหลด...</li>
             </ul>
         </div>
 
         <div class="editor-area">
-            <h1 id="formTitle">📝 New Note</h1>
-            <input type="text" id="noteTitle" placeholder="หัวข้อเรื่อง...">
-            <textarea id="noteContent" placeholder="พิมพ์รายละเอียดที่นี่..."></textarea>
-            
-            <div class="button-group">
-                <button onclick="addNote()" id="saveBtn">บันทึก</button>
-                <button onclick="cancelEdit()" id="cancelBtn" style="display:none; background-color: #6c757d;">ยกเลิก</button>
+            <div class="top-action">
+                <button class="btn-new" onclick="showCreateForm()">➕ เขียนบันทึกใหม่</button>
+            </div>
+
+            <div id="viewSection">
+                <div class="meta-info" id="viewMeta"></div>
+                <h1 id="viewTitle">หัวข้อเรื่อง</h1>
+                <div id="viewContent">เนื้อหา...</div>
+                <button class="btn-edit-mode" onclick="enableEditMode()">✏️ แก้ไขบันทึกนี้</button>
+            </div>
+
+            <div id="editSection">
+                <h2 id="formTitle">📝 เขียนบันทึกใหม่</h2>
+                <input type="text" id="noteTitle" placeholder="หัวข้อเรื่อง...">
+                <textarea id="noteContent" placeholder="พิมพ์รายละเอียดที่นี่..."></textarea>
+                
+                <button onclick="saveNote()" class="btn-save" id="saveBtn">บันทึก</button>
+                <button onclick="cancelEdit()" class="btn-cancel" id="cancelBtn" style="display:none;">ยกเลิกการแก้ไข</button>
             </div>
         </div>
     </div>

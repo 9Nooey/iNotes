@@ -8,17 +8,22 @@
 </head>
 <body>
     <div class="container">
-        <h1>📝 iNotes</h1>
-        
-        <div class="input-group">
-            <input type="text" id="noteTitle" placeholder="หัวข้อเรื่อง...">
-            <textarea id="noteContent" placeholder="รายละเอียด..."></textarea>
-            <button onclick="addNote()" id="saveBtn">บันทึก</button>
-            <button onclick="cancelEdit()" id="cancelBtn" style="display:none; background-color: #6c757d;">ยกเลิกแก้ไข</button>
+        <div class="notes-sidebar">
+            <h2>📚 รายการบันทึก</h2>
+            <ul id="noteList">
+                </ul>
         </div>
 
-        <ul id="noteList">
-            </ul>
+        <div class="editor-area">
+            <h1 id="formTitle">📝 เขียนบันทึกใหม่</h1>
+            <input type="text" id="noteTitle" placeholder="หัวข้อเรื่อง...">
+            <textarea id="noteContent" placeholder="รายละเอียด..."></textarea>
+            
+            <div class="button-group">
+                <button onclick="addNote()" id="saveBtn">บันทึก</button>
+                <button onclick="cancelEdit()" id="cancelBtn" style="display:none; background-color: #6c757d;">ยกเลิก</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>

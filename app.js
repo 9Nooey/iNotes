@@ -8,15 +8,12 @@ const firebaseConfig = {
   appId: "1:541940097515:web:1a5302983a1d0f1aafb9ae"
 };
 
-// เริ่มต้น Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let isEditing = false;
 let currentEditId = null;
 
-// --- Security function: ป้องกัน XSS Attack ---
-// ฟังก์ชันนี้จะแปลงอักขระพิเศษ HTML ให้เป็นข้อความธรรมดา ป้องกันการรัน Script อันตราย
 function escapeHtml(text) {
     if (!text) return text;
     return text
@@ -27,12 +24,20 @@ function escapeHtml(text) {
         .replace(/'/g, "&#039;");
 }
 
-// --- Create: เพิ่มข้อมูล ---
+// ฟังก์ชันแปลง Timestamp เป็นวันที่ภาษาไทย
+function formatDate(timestamp) {
+    if (!timestamp) return "-";
+    const date = timestamp.toDate(); // แปลง Firestore Timestamp เป็น JS Date
+    return date.toLocaleString('th-TH', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
+}
+
 function addNote() {
     const title = document.getElementById('noteTitle').value;
     const content = document.getElementById('noteContent').value;
 
-    // Validation: ป้องกันข้อมูลว่างเปล่า
     if (!title.trim() || !content.trim()) {
         alert("กรุณากรอกข้อมูลให้ครบถ้วน");
         return;
@@ -42,38 +47,44 @@ function addNote() {
         updateNoteInDB(title, content);
     } else {
         db.collection("notes").add({
-            title: title, // Firestore จะเก็บข้อมูลแบบ Plain Text
+            title: title,
             content: content,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            // บันทึกทั้งเวลาสร้างและเวลาแก้ไขครั้งแรก
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         })
         .then(() => {
             resetForm();
-            loadNotes();
+            loadNotes(); // โหลดใหม่เพื่ออัปเดตรายการ
         })
-        .catch((error) => {
-            console.error("Error adding document: ", error);
-        });
+        .catch((error) => console.error("Error:", error));
     }
 }
 
-// --- Read: อ่านข้อมูล ---
 function loadNotes() {
     const list = document.getElementById('noteList');
-    list.innerHTML = ""; // เคลียร์ของเก่า
+    list.innerHTML = ""; 
 
-    db.collection("notes").orderBy("timestamp", "desc").get().then((querySnapshot) => {
+    db.collection("notes").orderBy("updatedAt", "desc").get().then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            // ใช้ escapeHtml ตอนแสดงผล เพื่อป้องกัน XSS
             const safeTitle = escapeHtml(data.title);
             const safeContent = escapeHtml(data.content);
             
+            // ดึงข้อมูลวันที่
+            const createdStr = formatDate(data.createdAt || data.timestamp); // รองรับข้อมูลเก่าที่ใช้ field timestamp
+            const updatedStr = formatDate(data.updatedAt);
+
             list.innerHTML += `
                 <li>
                     <h3>${safeTitle}</h3>
                     <p>${safeContent}</p>
+                    <div class="timestamp">
+                        <span>🕒 สร้าง: ${createdStr}</span>
+                        <span>✏️ แก้ไข: ${updatedStr}</span>
+                    </div>
                     <div class="actions">
-                        <button class="btn-edit" onclick="editNote('${doc.id}', '${safeTitle}', '${safeContent}')">แก้ไข</button>
+                        <button class="btn-edit" onclick="editNote('${doc.id}', '${safeTitle}', '${safeContent.replace(/\n/g, "\\n")}')">แก้ไข</button>
                         <button class="btn-delete" onclick="deleteNote('${doc.id}')">ลบ</button>
                     </div>
                 </li>
@@ -82,28 +93,31 @@ function loadNotes() {
     });
 }
 
-// --- Update: เตรียมข้อมูลเพื่อแก้ไข ---
 function editNote(id, title, content) {
     isEditing = true;
     currentEditId = id;
     document.getElementById('noteTitle').value = title;
     document.getElementById('noteContent').value = content;
+    
+    document.getElementById('formTitle').innerText = "✏️ กำลังแก้ไขบันทึก";
     document.getElementById('saveBtn').innerText = "อัพเดท";
     document.getElementById('cancelBtn').style.display = "inline-block";
+    
+    // เลื่อนหน้าจอกลับมาที่ฟอร์ม (สำหรับมือถือ)
+    document.querySelector('.editor-area').scrollIntoView({ behavior: 'smooth' });
 }
 
 function updateNoteInDB(title, content) {
     db.collection("notes").doc(currentEditId).update({
         title: title,
         content: content,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp() // อัปเดตเฉพาะเวลาแก้ไข
     }).then(() => {
         resetForm();
         loadNotes();
     });
 }
 
-// --- Delete: ลบข้อมูล ---
 function deleteNote(id) {
     if(confirm("คุณต้องการลบรายการนี้ใช่ไหม?")) {
         db.collection("notes").doc(id).delete().then(() => {
@@ -117,6 +131,7 @@ function resetForm() {
     document.getElementById('noteContent').value = '';
     isEditing = false;
     currentEditId = null;
+    document.getElementById('formTitle').innerText = "📝 เขียนบันทึกใหม่";
     document.getElementById('saveBtn').innerText = "บันทึก";
     document.getElementById('cancelBtn').style.display = "none";
 }
@@ -125,5 +140,4 @@ function cancelEdit() {
     resetForm();
 }
 
-// โหลดข้อมูลเมื่อเข้าเว็บ
 loadNotes();
